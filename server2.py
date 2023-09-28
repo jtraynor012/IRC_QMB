@@ -1,4 +1,5 @@
 import socket
+import re
 
 HOST_NAME = "QMB_IRC_SERVER"
 HOST = "fc00:1337::17"
@@ -7,6 +8,7 @@ PORT = 6667
 nickname = ""
 username = ""
 
+COMMANDS = ['CAP', 'USER', 'NICK', 'JOIN', 'QUIT']
 
 
 with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as s:
@@ -18,8 +20,6 @@ with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as s:
 	print(f'{client_addr} has connected to the server...')
 
 
-
-
 	incoming = []
 	while True:
 		data = client_socket.recv(1024).decode()
@@ -28,7 +28,7 @@ with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as s:
 		s.setblocking(0)
 
 		if not data:
-			break
+			
 
 		incoming.append(data.splitlines())
 
@@ -42,12 +42,15 @@ with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as s:
 			for i in cmd:
 				comm = i.split(' ')
 				if comm[0] == "NICK":
-					nickname = comm[1]
+					x = re.search("[a-zA-Z0-9]+", comm[1])
+					if x:
+						nickname = comm[1]
+					else:
+						#return error message
 
-					#print(nickname)
 				if comm[0] == "USER":
 					username = comm[1]
-					#print(username)
+
 		if nickname and username:
 
 			welcome_msg = []
